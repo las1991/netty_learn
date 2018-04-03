@@ -1,4 +1,4 @@
-package officialdemo.DiscardServer;
+package io.netty.demo.discardServer;
 
 import io.netty.buffer.ByteBuf;
 
