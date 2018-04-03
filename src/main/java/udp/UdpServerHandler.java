@@ -26,20 +26,18 @@ public class UdpServerHandler extends SimpleChannelInboundHandler<DatagramPacket
     }
 
     @Override
-    protected void messageReceived(ChannelHandlerContext ctx, DatagramPacket msg) throws Exception {
-        String req = msg.content().toString(CharsetUtil.UTF_8);
-        System.out.println(req+","+"谚语字典查询?".equals(req));
-        if ("谚语字典查询?".equals(req)) {
-            System.out.println(msg.sender());
-            ctx.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(nextQuote(), CharsetUtil.UTF_8), msg.sender()));
-        }
-
-    }
-
-    @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
             throws Exception {
         cause.printStackTrace();
         ctx.close();
+    }
+
+    protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) throws Exception {
+        String req = msg.content().toString(CharsetUtil.UTF_8);
+        System.out.println(req + "," + "谚语字典查询?".equals(req));
+        if ("谚语字典查询?".equals(req)) {
+            System.out.println(msg.sender());
+            ctx.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(nextQuote(), CharsetUtil.UTF_8), msg.sender()));
+        }
     }
 }

@@ -14,16 +14,15 @@ import io.netty.util.CharsetUtil;
 public class UdpClientHandler extends SimpleChannelInboundHandler<DatagramPacket> {
 
     @Override
-    protected void messageReceived(ChannelHandlerContext ctx, DatagramPacket msg) throws Exception {
-        System.out.println(msg.content().toString(CharsetUtil.UTF_8));
-        ctx.close();
-    }
-
-    @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
             throws Exception {
         cause.printStackTrace();
         ctx.close();
     }
 
+    @Override
+    protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) throws Exception {
+        System.out.println(msg.content().toString(CharsetUtil.UTF_8));
+        ctx.close();
+    }
 }
