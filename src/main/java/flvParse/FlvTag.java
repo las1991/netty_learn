@@ -1,8 +1,12 @@
 package flvParse;
 
 import io.netty.buffer.ByteBuf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FlvTag {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(FlvTag.class);
 
     enum TagType {
         AUDIO, VIDEO, SCRIPT_DATA
@@ -29,7 +33,8 @@ public class FlvTag {
             //0010 0000
             this.isfilter = (b & 0x20) > 0;
             //0001 1111
-            switch (b & 0x0f) {
+
+            switch (b & 0x1f) {
                 case 0x08:
                     this.tagType = TagType.AUDIO;
                     break;
@@ -40,6 +45,7 @@ public class FlvTag {
                     this.tagType = TagType.SCRIPT_DATA;
                     break;
                 default:
+                    LOGGER.info(" type {}", b & 0x1f);
             }
 
             this.dataSize = content.readMedium();
@@ -48,16 +54,17 @@ public class FlvTag {
 
             switch (this.tagType) {
                 case AUDIO:
-                    this.audioTagHeader = new AudioTagHeader(content.retain());
+                    this.audioTagHeader = new AudioTagHeader(content.readSlice(content.readableBytes()).retain());
                     break;
                 case VIDEO:
+                    this.videoTagHeader=new VideoTagHeader(content.readSlice(content.readableBytes()).retain());
                     break;
                 case SCRIPT_DATA:
                     break;
                 default:
             }
         } catch (Exception e) {
-
+            LOGGER.error("{}", e.getMessage(), e);
         } finally {
             content.release();
         }

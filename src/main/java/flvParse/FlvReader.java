@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.List;
 
 public class FlvReader {
@@ -20,7 +21,7 @@ public class FlvReader {
 
     private FlvHeader header;
 
-    private List<FlvTag> tags;
+    private List<FlvTag> tags = new ArrayList<>();
 
     public static boolean isFlvFile(ByteBuffer byteBuffer) {
         return byteBuffer.get(0) == 'F' && byteBuffer.get(1) == 'L' && byteBuffer.get(2) == 'V';
@@ -36,6 +37,8 @@ public class FlvReader {
             FileChannel channel = new RandomAccessFile(file, "r").getChannel();
             ByteBuffer header = ByteBuffer.allocate(9);
             channel.read(header);
+            header.flip();
+
             if (!isFlvFile(header)) {
                 System.out.println("file is not flv");
                 return;
@@ -50,24 +53,29 @@ public class FlvReader {
 
                 ByteBuffer tagHeader = ByteBuffer.allocate(11);
                 channel.read(tagHeader);
-                tag.addComponent(allocator.buffer(11).writeBytes(tagHeader));
+                tagHeader.flip();
+                tag.addComponent(true, allocator.buffer(11).writeBytes(tagHeader));
 
                 int tagDataSize = tag.getMedium(1);
                 //data
                 ByteBuffer data = ByteBuffer.allocate(tagDataSize);
                 channel.read(data);
+                data.flip();
 
-                tag.addComponent(allocator.buffer(tagDataSize).writeBytes(data));
+                tag.addComponent(true, allocator.buffer(tagDataSize).writeBytes(data));
 
                 tags.add(new FlvTag(tag));
+
+                channel.position(channel.position() + 4);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("{}", e.getMessage(), e);
         }
     }
 
     public static void main(String[] args) {
-        FlvReader reader = new FlvReader(new File("/home/las/test.flv"));
+        String file = FlvReader.class.getResource("/test.flv").getPath();
+        FlvReader reader = new FlvReader(new File(file));
         reader.tags.stream().forEach(x -> {
             LOGGER.info("tag {} ", x);
         });

@@ -68,27 +68,29 @@ public class AudioTagHeader {
 
     private int aacPacketType;
 
+
     public AudioTagHeader(ByteBuf content) {
         try {
             if (content.readableBytes() < 1) {
                 throw new IllegalArgumentException("content is null");
             }
-            int format = content.getByte(0) & 0xf0;
+            byte audioTagHeader = content.readByte();
+            int format = (audioTagHeader & 0xf0) >> 4;
             if (format < 0 || format > SoundFormat.values().length) {
                 LOGGER.warn("format {} is unsupport !", format);
             } else {
                 this.soundFormat = SoundFormat.valueOf(format);
             }
 
-            int rate = content.getByte(0) & 0x0c;
+            int rate = (audioTagHeader & 0x0c) >> 2;
             if (rate < 0 || rate > SoundRate.values().length) {
                 LOGGER.warn("rate {} is unsupport !", rate);
             } else {
-                this.soundRate = SoundRate.valueOf(rate);
+                this.soundRate = SoundRate.values()[rate];
             }
 
-            this.soundSize = content.getByte(0) & 0x02;
-            this.soundType = content.getByte(0) & 0x01;
+            this.soundSize = (audioTagHeader & 0x02) >> 1;
+            this.soundType = audioTagHeader & 0x01;
 
         } finally {
             content.release();
