@@ -6,7 +6,7 @@ import io.netty.buffer.Unpooled;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
-import java.nio.    charset.Charset;
+import java.nio.charset.Charset;
 
 /**
  * Created by las on 2017/2/21.
@@ -97,6 +97,27 @@ public class ByteBufUsage {
     }
 
     @Test
+    public void compositeByteBufCopy() {
+        ByteBuf buf = Unpooled.copiedBuffer("Netty in Action rocks!", Charset.defaultCharset());
+        CompositeByteBuf compositeByteBuf = Unpooled.compositeBuffer()
+                .addComponents(true, buf.retain())
+                .addComponent(true, buf);
+        ByteBuf copied = compositeByteBuf.copy();
+        assert compositeByteBuf.readableBytes() == copied.readableBytes();
+    }
+
+    @Test
+    public void compositeByteBufDuplicated() {
+        ByteBuf buf = Unpooled.copiedBuffer("Netty in Action rocks!", Charset.defaultCharset());
+        CompositeByteBuf compositeByteBuf = Unpooled.compositeBuffer()
+                .addComponents(true, buf.retain())
+                .addComponent(true, buf);
+        ByteBuf duplicated = compositeByteBuf.duplicate();
+        System.out.println(duplicated.getClass());
+        assert compositeByteBuf.readableBytes() == duplicated.readableBytes();
+    }
+
+    @Test
     public void sliceByteBuf() {
         Charset utf8 = Charset.forName("UTF-8");
         ByteBuf buf = Unpooled.copiedBuffer("Netty in Action rocks!", utf8);
@@ -140,4 +161,5 @@ public class ByteBufUsage {
         assert readerIndex != buf.readerIndex();
         assert writerIndex != buf.writerIndex();
     }
+
 }
