@@ -162,4 +162,16 @@ public class ByteBufUsage {
         assert writerIndex != buf.writerIndex();
     }
 
+    @Test
+    public void direct() {
+        ByteBuf directBuffer = Unpooled.directBuffer();
+        directBuffer.writeBytes("Netty in Action rocks!".getBytes());
+        ByteBuffer byteBuffer = directBuffer.nioBuffer();
+        assert directBuffer.refCnt() == 1;
+        int readableBytes = directBuffer.readableBytes();
+        directBuffer.release();
+        assert directBuffer.refCnt() == 0;
+        assert byteBuffer.remaining() == readableBytes;
+    }
+
 }
